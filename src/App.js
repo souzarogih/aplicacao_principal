@@ -1,25 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
-function App() {
+const App = () => {
+  const [activeMicrofrontend, setActiveMicrofrontend] = useState(null);
+
+  const loadMicrofrontend = async (microfrontend) => {
+    try {
+      const module = await import(`http://localhost:3001/${microfrontend}/build/index.js`);  // Substitua 3001 pela porta correta
+      const microfrontendComponent = module.default;
+      setActiveMicrofrontend(() => microfrontendComponent);
+    } catch (error) {
+      console.error('Erro ao carregar o microfrontend:', error);
+    }
+  };
+  
+
+  useEffect(() => {
+    loadMicrofrontend('MicrofrontendA');
+  }, []); // Carregar um microfrontend por padrão
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Aplicação Principal</h1>
+      <nav>
+        <button onClick={() => loadMicrofrontend('MicrofrontendA')}>Microfrontend A</button>
+        <button onClick={() => loadMicrofrontend('MicrofrontendB')}>Microfrontend B</button>
+      </nav>
+      {activeMicrofrontend &&
+        createPortal(<activeMicrofrontend />, document.getElementById(activeMicrofrontend.name.toLowerCase()))
+      }
     </div>
   );
-}
+};
 
 export default App;
